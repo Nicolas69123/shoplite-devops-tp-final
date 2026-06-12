@@ -1,13 +1,96 @@
-name: CD starter a completer
+name: CD
 
 on:
+  push:
+    branches: [develop]
+    tags: ["v*"]
   workflow_dispatch:
 
 jobs:
-  consigne:
+  deploy-staging:
+    name: Deploiement staging
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: http://localhost:8081
     steps:
-      - name: Consigne
+      - uses: actions/checkout@v4
+
+      - name: Build des images (base + override staging)
+        run: docker compose -f docker-compose.yml -f docker-compose.staging.yml build
+
+      - name: Demarrage de l'environnement staging
+        run: docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+
+      - name: Smoke test staging (port 8081)
+        run: BASE_URL=http://localhost:8081 ./scripts/smoke-test.sh
+
+      - name: Logs en cas d'echec
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.staging.yml logs --tail=100
+
+      - name: Journal de deploiement
+        if: always()
         run: |
-          echo "Ce workflow est volontairement minimal."
-          echo "Les etudiants doivent ajouter staging, production simulee, smoke test et rollback."
+          {
+            echo "## Journal de deploiement staging"
+            echo "| Champ | Valeur |"
+            echo "|---|---|"
+            echo "| Version | ${GITHUB_SHA::8} |"
+            echo "| Ref | ${GITHUB_REF_NAME} |"
+            echo "| Date | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| Auteur | ${GITHUB_ACTOR} |"
+            echo "| Resultat | ${{ job.status }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Arret de l'environnement (runner ephemere, volumes preserves)
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.staging.yml down
+
+  deploy-production:
+    name: Deploiement production simulee
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build des images taguees
+        run: |
+          docker compose build
+          docker tag "$(docker images --format '{{.Repository}}' | grep api | head -1)" "shoplite-api:${GITHUB_REF_NAME}"
+          docker tag "$(docker images --format '{{.Repository}}' | grep frontend | head -1)" "shoplite-frontend:${GITHUB_REF_NAME}"
+          docker images | grep shoplite
+
+      - name: Demarrage de la production simulee
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+        run: APP_VERSION="$APP_VERSION" docker compose up -d
+
+      - name: Smoke test production (port 8080)
+        run: BASE_URL=http://localhost:8080 ./scripts/smoke-test.sh
+
+      - name: Logs en cas d'echec
+        if: failure()
+        run: docker compose logs --tail=100
+
+      - name: Journal de deploiement
+        if: always()
+        run: |
+          {
+            echo "## Journal de deploiement production"
+            echo "| Champ | Valeur |"
+            echo "|---|---|"
+            echo "| Version | ${GITHUB_REF_NAME} |"
+            echo "| Commit | ${GITHUB_SHA::8} |"
+            echo "| Date | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| Auteur | ${GITHUB_ACTOR} |"
+            echo "| Resultat | ${{ job.status }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Arret de l'environnement (runner ephemere, volumes preserves)
+        if: always()
+        run: docker compose down
