@@ -1,6 +1,6 @@
 {
   "name": "shoplite-api",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "API de base pour le TP final DevOps ShopLite",
   "main": "src/server.js",
   "scripts": {
@@ -25,7 +25,10 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "collectCoverageFrom": ["src/**/*.js", "!src/server.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js"
+    ],
     "coverageThreshold": {
       "global": {
         "statements": 80,
