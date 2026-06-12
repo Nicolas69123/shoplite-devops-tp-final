@@ -1,5 +1,8 @@
 FROM node:20-alpine
 
+# Correctifs de securite du systeme de base (vulnerabilites HIGH detectees par Trivy)
+RUN apk upgrade --no-cache
+
 WORKDIR /app
 
 ENV NODE_ENV=production
