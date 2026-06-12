@@ -1,5 +1,8 @@
 # ShopLite - Starter TP final DevOps
 
+[![CI](https://github.com/Nicolas69123/shoplite-devops-tp-final/actions/workflows/ci.yml/badge.svg)](https://github.com/Nicolas69123/shoplite-devops-tp-final/actions/workflows/ci.yml)
+[![CD](https://github.com/Nicolas69123/shoplite-devops-tp-final/actions/workflows/cd.yml/badge.svg)](https://github.com/Nicolas69123/shoplite-devops-tp-final/actions/workflows/cd.yml)
+
 ShopLite est un projet de base pour un TP final DevOps.
 
 Les etudiants recoivent uniquement ce socle applicatif :
