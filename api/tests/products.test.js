@@ -26,7 +26,7 @@ describe("GET /products (integration avec PostgreSQL)", () => {
     expect(response.status).toBe(200);
     expect(response.body.source).toBe("database");
     expect(Array.isArray(response.body.data)).toBe(true);
-    expect(response.body.data.length).toBe(3);
+    expect(response.body.data.length).toBe(4);
     expect(response.body.data[0]).toHaveProperty("name");
     expect(response.body.data[0]).toHaveProperty("price_cents");
   });
