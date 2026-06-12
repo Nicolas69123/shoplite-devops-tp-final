@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
   try {
     await db.query("SELECT 1");
     checks.database = "ok";
-  } catch (error) {
+  } catch {
     checks.database = "error";
     status = 503;
   }
