@@ -130,7 +130,7 @@ jobs:
         run: docker build -t shoplite-api:scan ./api
 
       - name: Scan Trivy (vulnerabilites image)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: shoplite-api:scan
           format: table
