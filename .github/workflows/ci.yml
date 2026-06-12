@@ -118,3 +118,22 @@ jobs:
 
       - name: Taille des images
         run: docker images | grep shoplite
+
+  security:
+    name: Scan securite Trivy
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build de l'image API a scanner
+        run: docker build -t shoplite-api:scan ./api
+
+      - name: Scan Trivy (vulnerabilites image)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: shoplite-api:scan
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true

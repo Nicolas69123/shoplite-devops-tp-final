@@ -1,0 +1,15 @@
+# Override "production simulee" locale.
+# Usage : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Trois environnements locaux isoles par leurs ports :
+#   dev      -> http://localhost:8080  (docker-compose.yml seul)
+#   staging  -> http://localhost:8081  (override staging)
+#   prod sim -> http://localhost:8082  (cet override)
+services:
+  api:
+    environment:
+      APP_VERSION: ${APP_VERSION:-v1.0.0}
+      LOG_LEVEL: warn
+
+  proxy:
+    ports: !override
+      - "8082:80"
